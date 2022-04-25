@@ -57,8 +57,8 @@ blue = (0, 0, 255)
 black = (0, 0, 0)
 gray = (200, 200, 200)
 white = (255, 255, 255)
-vertical = 600
-horizontal = 600
+vertical = 50
+horizontal = 50
 centroY = int(vertical/2)
 centroX = int(horizontal/2)
 rad = 0
@@ -73,10 +73,13 @@ while robot.step(TIME_STEP) != -1:
 
     componentes_carro.set_speed(0, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
 
+    # Pegando imagem da camera do simulador
     camera.getImage()
+    # Salvando um print da imagem
     camera.saveImage("camera1.jpg", 100)
+    # Fazendo a leitura da imagem com o opencv
     image = camera_funcoes.leitura_camera()
-
+    # Fazendo a transformação Warp na imagem
     warped = camera_funcoes.transformacao_warp(image)
 
     img_copy = np.copy(image)
