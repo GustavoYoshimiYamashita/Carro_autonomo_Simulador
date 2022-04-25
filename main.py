@@ -47,34 +47,6 @@ tail_lights = robot.getDevice('tail_lights')
 work_head_lights = robot.getDevice('work_head_lights')
 road_head_lights = robot.getDevice('road_head_lights')
 
-# Iniciando o sensor Lidar
-lidar = robot.getDevice("lidar")
-Lidar.enable(lidar, TIME_STEP)
-Lidar.enablePointCloud(lidar)
-
-# Variáveis para o lidar
-grafico = [0.0, 0]
-momento = []
-leitura = []
-valor = []
-list_valorX = []
-list_valorY = []
-tamanho_lists = []
-parede_frente = False
-parede_direita = False
-parede_esquerda = False
-media_direita = 0
-media_esquerda = 0
-media_frente = 0
-# Lista para a região norte do robô
-list_norte = []
-# Lista para a região sul do robô
-list_sul = []
-# Lista para a região leste do robô
-list_leste = []
-# Lista para a região oeste do robô
-list_oeste = []
-graus = 0.0
 
 ''' Variáveis para o Pygame'''
 
@@ -95,27 +67,6 @@ rad = 0
 surface = pygame.display.set_mode((horizontal, vertical))
 
 ''''''''''''''''''''''''''''''
-
-# Variáveis do PID
-diferenca = 0.0
-#kp = 10.0
-#ki = 0.0001
-#kd = -50.0
-kp = 7.19999999999999 #10.0
-ki =  0.00000500000000#0.0001
-kd = 7.19999999999999 #-50.0
-proporcional = 0.0
-integral = 0.0
-derivativo = 0.0
-PID = 0.0
-ideal_value = 180
-ultimaMedida = 0.0
-
-# Adicioando o sensor compass (Bússola) ao robô
-compass = robot.getDevice('compass')
-compass.enable(TIME_STEP)
-direction = 0
-initial_value = True
 
 
 while robot.step(TIME_STEP) != -1:
