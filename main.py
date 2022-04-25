@@ -117,29 +117,10 @@ compass.enable(TIME_STEP)
 direction = 0
 initial_value = True
 
-def set_speed(velocity):
-    left_front_wheel.setVelocity(velocity)
-    right_front_wheel.setVelocity(velocity)
-    left_rear_wheel.setVelocity(velocity)
-    right_rear_wheel.setVelocity(velocity)
-
-def leitura_camera(camera):
-    camera.getImage()
-    camera.saveImage("camera1.jpg", 100)
-    img = cv2.imread("../Carro_Autonomo/camera1.jpg", cv2.IMREAD_COLOR)
-    width = int(img.shape[1] * 2)
-    height = int(img.shape[0] * 2)
-
-    dim = (width, height)
-
-    img1 = cv2.resize(img, dim, interpolation= cv2.INTER_AREA)
-
-    return img1
-
 
 while robot.step(TIME_STEP) != -1:
 
-    set_speed(0)
+    componentes_carro.set_speed(0, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
 
     camera.getImage()
     camera.saveImage("camera1.jpg", 100)
@@ -153,8 +134,6 @@ while robot.step(TIME_STEP) != -1:
     #plt.show()
 
     cv2.imshow("camera1", warped)
-
-
 
     for event in pygame.event.get():
         if event.type == 256:
