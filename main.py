@@ -57,8 +57,8 @@ blue = (0, 0, 255)
 black = (0, 0, 0)
 gray = (200, 200, 200)
 white = (255, 255, 255)
-vertical = 50
-horizontal = 50
+vertical = 200
+horizontal = 200
 centroY = int(vertical/2)
 centroX = int(horizontal/2)
 rad = 0
@@ -71,7 +71,7 @@ surface = pygame.display.set_mode((horizontal, vertical))
 
 while robot.step(TIME_STEP) != -1:
 
-    componentes_carro.set_speed(0, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
+    componentes_carro.set_speed(1, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
 
     # Pegando imagem da camera do simulador
     camera.getImage()
@@ -80,14 +80,23 @@ while robot.step(TIME_STEP) != -1:
     # Fazendo a leitura da imagem com o opencv
     image = camera_funcoes.leitura_camera()
     # Fazendo a transformação Warp na imagem
-    warped = camera_funcoes.transformacao_warp(image)
+    warped, invM = camera_funcoes.transformacao_warp(image)
+    # Tranfosrmação grayscale
+    grayscale = camera_funcoes.transformacao_grayscale(warped)
+    # Transformação Threshold
+    threshold = camera_funcoes.transformacao_threshold(grayscale)
+    # Detecção da linha
+    frame, left_curverad, right_curverad = camera_funcoes.search_around_poly(threshold)
+    frame = cv2.warpPerspective(frame, invM, (frame.shape[1], frame.shape[0]), flags = cv2.INTER_LINEAR)
+    frame = cv2.addWeighted(frame, 0.3, image, 0.7, 0)
+
 
     img_copy = np.copy(image)
     img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
     plt.imshow(img_copy)
     #plt.show()
 
-    cv2.imshow("camera1", warped)
+    cv2.imshow("camera1", frame)
 
     for event in pygame.event.get():
         if event.type == 256:
