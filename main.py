@@ -68,6 +68,10 @@ surface = pygame.display.set_mode((horizontal, vertical))
 
 ''''''''''''''''''''''''''''''
 
+#  Função Map do arduino, regra de três
+def _map(x, in_min, in_max, out_min, out_max):
+    return float((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+
 
 while robot.step(TIME_STEP) != -1:
 
@@ -95,16 +99,18 @@ while robot.step(TIME_STEP) != -1:
     car_pos = image.shape[1] / 2
     # Centro da faixa 0.397m
     center = (abs(car_pos - curvature) * (3.7 / 650)) / 10
-    curvature = 'Radius of Curvature: ' + str(round(curvature, 2)) + 'm'
+    curvatureAviso = 'Radius of Curvature: ' + str(round(curvature, 2)) + 'm'
     centerAviso = str(round(center, 3)) + 'm away from center'
-    frame = cv2.putText(frame, curvature, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+    frame = cv2.putText(frame, curvatureAviso, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
     frame = cv2.putText(frame, centerAviso, (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+
+    curvature = _map(curvature, 0, 10000, 0.1, 0)
 
 
     if float(center) < 0.38:
-        componentes_carro.set_steering_angle(0.1, left_steer, right_steer)
+        componentes_carro.set_steering_angle(curvature, left_steer, right_steer)
     elif float(center) > 0.38:
-        componentes_carro.set_steering_angle(-0.1, left_steer, right_steer)
+        componentes_carro.set_steering_angle(-curvature, left_steer, right_steer)
     else:
         componentes_carro.set_steering_angle(0, left_steer, right_steer)
 
