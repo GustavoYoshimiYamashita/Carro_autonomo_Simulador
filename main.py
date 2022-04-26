@@ -96,10 +96,17 @@ while robot.step(TIME_STEP) != -1:
     # Centro da faixa 0.397m
     center = (abs(car_pos - curvature) * (3.7 / 650)) / 10
     curvature = 'Radius of Curvature: ' + str(round(curvature, 2)) + 'm'
-    center = str(round(center, 3)) + 'm away from center'
+    centerAviso = str(round(center, 3)) + 'm away from center'
     frame = cv2.putText(frame, curvature, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
-    frame = cv2.putText(frame, center, (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+    frame = cv2.putText(frame, centerAviso, (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
+
+    if float(center) < 0.38:
+        componentes_carro.set_steering_angle(0.1, left_steer, right_steer)
+    elif float(center) > 0.38:
+        componentes_carro.set_steering_angle(-0.1, left_steer, right_steer)
+    else:
+        componentes_carro.set_steering_angle(0, left_steer, right_steer)
 
 
     '''
