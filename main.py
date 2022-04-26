@@ -90,11 +90,26 @@ while robot.step(TIME_STEP) != -1:
     frame = cv2.warpPerspective(frame, invM, (frame.shape[1], frame.shape[0]), flags = cv2.INTER_LINEAR)
     frame = cv2.addWeighted(frame, 0.3, image, 0.7, 0)
 
+    # Add curvature and distance from the center
+    curvature = (left_curverad + right_curverad) / 2
+    car_pos = image.shape[1] / 2
+    # Centro da faixa 0.397m
+    center = (abs(car_pos - curvature) * (3.7 / 650)) / 10
+    curvature = 'Radius of Curvature: ' + str(round(curvature, 2)) + 'm'
+    center = str(round(center, 3)) + 'm away from center'
+    frame = cv2.putText(frame, curvature, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+    frame = cv2.putText(frame, center, (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
+
+
+    '''
+    Esse código plota a camera com valores do eixo X e Y
+    
     img_copy = np.copy(image)
     img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
     plt.imshow(img_copy)
     #plt.show()
+    '''
 
     cv2.imshow("camera1", frame)
 
