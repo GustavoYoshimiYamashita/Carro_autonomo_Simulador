@@ -75,7 +75,7 @@ def _map(x, in_min, in_max, out_min, out_max):
 
 while robot.step(TIME_STEP) != -1:
 
-    componentes_carro.set_speed(0, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
+    componentes_carro.set_speed(1, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
 
     # Pegando imagem da camera do simulador
     camera.getImage()
@@ -96,6 +96,7 @@ while robot.step(TIME_STEP) != -1:
 
     # Add curvature and distance from the center
     curvature = (left_curverad + right_curverad) / 2
+    if curvature > 100: curvature = 100
     car_pos = image.shape[1] / 2
     # Centro da faixa 0.397m
     center = (abs(car_pos - curvature) * (3.7 / 650)) / 10
@@ -104,25 +105,22 @@ while robot.step(TIME_STEP) != -1:
     frame = cv2.putText(frame, curvatureAviso, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
     frame = cv2.putText(frame, centerAviso, (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
-    curvature = _map(curvature, 0, 10000, 0.1, 0)
+    #if curvature > 10000: curvature = 10000
+    variacao = _map(curvature, 0, 50, 0.4, 0)
 
     cv2.imshow("camera1", frame)
 
-    '''
-    if float(center) < 0.38:
-        componentes_carro.set_steering_angle(curvature, left_steer, right_steer)
-    elif float(center) > 0.38:
-        componentes_carro.set_steering_angle(-curvature, left_steer, right_steer)
-    else:
-        componentes_carro.set_steering_angle(0, left_steer, right_steer)
-'''
+
+    if curvature <= 50:
+        componentes_carro.set_steering_angle(variacao, left_steer, right_steer)
+
 
 
     #Esse código plota a camera com valores do eixo X e Y
     
-    #img_copy = np.copy(image)
-    #img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
-    #plt.imshow(img_copy)
+    img_copy = np.copy(image)
+    img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
+    plt.imshow(img_copy)
     #plt.show()
 
 
