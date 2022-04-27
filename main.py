@@ -8,9 +8,14 @@ import matplotlib.pyplot as plt
 import camera_funcoes
 import componentes_carro
 import lidar
+import csv
 
 # Mexendo no matplotlib
 #%matplotlib qt5
+
+# Criando um arquivo csv para machine learning
+header = ['curvature', 'center', 'angle']
+data = []
 
 
 # Definindo o tempo de atualização da tela
@@ -47,6 +52,9 @@ tail_lights = robot.getDevice('tail_lights')
 work_head_lights = robot.getDevice('work_head_lights')
 road_head_lights = robot.getDevice('road_head_lights')
 
+# Keyboard
+robot.keyboard.enable(TIME_STEP)
+
 
 ''' Variáveis para o Pygame'''
 
@@ -62,6 +70,8 @@ horizontal = 200
 centroY = int(vertical/2)
 centroX = int(horizontal/2)
 rad = 0
+
+angle = 0
 
 # Iniciando tela do Pygame
 surface = pygame.display.set_mode((horizontal, vertical))
@@ -96,7 +106,7 @@ while robot.step(TIME_STEP) != -1:
 
     # Add curvature and distance from the center
     curvature = (left_curverad + right_curverad) / 2
-    if curvature > 100: curvature = 100
+    #if curvature > 1500: curvature = 1500
     car_pos = image.shape[1] / 2
     # Centro da faixa 0.397m
     center = (abs(car_pos - curvature) * (3.7 / 650)) / 10
@@ -105,15 +115,24 @@ while robot.step(TIME_STEP) != -1:
     frame = cv2.putText(frame, curvatureAviso, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
     frame = cv2.putText(frame, centerAviso, (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
-    #if curvature > 10000: curvature = 10000
-    variacao = _map(curvature, 0, 50, 0.4, 0)
-
     cv2.imshow("camera1", frame)
 
+    #print(robot.keyboard.getKey())
+    key = robot.keyboard.getKey()
+    if key == 314:
+        angle = angle - 0.01
+    elif key == 316:
+        angle = angle + 0.01
 
-    if curvature <= 50:
-        componentes_carro.set_steering_angle(variacao, left_steer, right_steer)
+    print("///////////////////////")
+    print(f"Curvature: {curvature}")
+    print(f"Center:    {center}")
+    print(f"Angle:     {angle}")
+    print("///////////////////////", end="\n")
 
+    data.append([curvature, center, angle])
+
+    componentes_carro.set_steering_angle(angle, left_steer, right_steer)
 
 
     #Esse código plota a camera com valores do eixo X e Y
@@ -130,6 +149,12 @@ while robot.step(TIME_STEP) != -1:
         if event.type == 256:
             pygame.quit()
             cv2.destroyAllWindows()
+            for i in range(len(data)):
+                print(data[i])
+            with open('data.csv', 'w', encoding='UTF8', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(header)
+                writer.writerows(data)
             exit()
 
 
