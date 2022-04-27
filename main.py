@@ -75,7 +75,7 @@ def _map(x, in_min, in_max, out_min, out_max):
 
 while robot.step(TIME_STEP) != -1:
 
-    componentes_carro.set_speed(1, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
+    componentes_carro.set_speed(0, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
 
     # Pegando imagem da camera do simulador
     camera.getImage()
@@ -106,25 +106,27 @@ while robot.step(TIME_STEP) != -1:
 
     curvature = _map(curvature, 0, 10000, 0.1, 0)
 
+    cv2.imshow("camera1", frame)
 
+    '''
     if float(center) < 0.38:
         componentes_carro.set_steering_angle(curvature, left_steer, right_steer)
     elif float(center) > 0.38:
         componentes_carro.set_steering_angle(-curvature, left_steer, right_steer)
     else:
         componentes_carro.set_steering_angle(0, left_steer, right_steer)
+'''
 
 
-    '''
-    Esse código plota a camera com valores do eixo X e Y
+    #Esse código plota a camera com valores do eixo X e Y
     
-    img_copy = np.copy(image)
-    img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
-    plt.imshow(img_copy)
+    #img_copy = np.copy(image)
+    #img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
+    #plt.imshow(img_copy)
     #plt.show()
-    '''
 
-    cv2.imshow("camera1", frame)
+
+
 
     for event in pygame.event.get():
         if event.type == 256:
