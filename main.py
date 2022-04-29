@@ -82,6 +82,68 @@ surface = pygame.display.set_mode((horizontal, vertical))
 def _map(x, in_min, in_max, out_min, out_max):
     return float((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
 
+def detectando_linhas_metodo1():
+    # Fazendo a transformação Warp na imagem
+    warped, invM = camera_funcoes.transformacao_warp(image)
+    # Tranfosrmação grayscale
+    grayscale = camera_funcoes.transformacao_grayscale(warped)
+    # Transformação Threshold
+    threshold = camera_funcoes.transformacao_threshold(grayscale)
+    # Detecção da linha
+    frame, left_curverad, right_curverad = camera_funcoes.search_around_poly(threshold)
+    frame = cv2.warpPerspective(frame, invM, (frame.shape[1], frame.shape[0]), flags=cv2.INTER_LINEAR)
+    frame = cv2.addWeighted(frame, 0.3, image, 0.7, 0)
+
+    # Add curvature and distance from the center
+    curvature = (left_curverad + right_curverad) / 2
+    # if curvature > 1500: curvature = 1500
+    car_pos = image.shape[1] / 2
+    # Centro da faixa 0.397m
+    center = (abs(car_pos - curvature) * (3.7 / 650)) / 10
+    curvatureAviso = 'Radius of Curvature: ' + str(round(curvature, 2)) + 'm'
+    centerAviso = str(round(center, 3)) + 'm away from center'
+    frame = cv2.putText(frame, curvatureAviso, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+    frame = cv2.putText(frame, centerAviso, (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+
+    return curvature, center, frame
+
+def detectando_linhas_metodo2():
+    # Fazendo a transformação Warp na imagem
+    warped, invM = camera_funcoes.transformacao_warp(image)
+    # Tranfosrmação grayscale
+    #grayscale = camera_funcoes.transformacao_grayscale(warped)
+    # Transformação Threshold
+    #threshold = camera_funcoes.transformacao_threshold(grayscale)
+
+    w = warped.shape[1]
+    h = warped.shape[0]
+
+    '''
+    x1, y1 = 0, 120
+    x2, y2 = 50, 120
+
+    line_thickness = 2
+    cv2.line(warped, (x1, y1), (x2, y2), (0, 255, 0), thickness=line_thickness)
+    
+    '''
+
+    rgb_list = []
+
+    for i in range(51):
+
+        cv2.circle(warped, (i, 120), radius=0, color=(0, 0, 255), thickness=-1)
+
+        color = image[i, 120]
+        blue = int(color[0])
+        green = int(color[1])
+        red = int(color[2])
+
+        if blue > 0 and green > 0 and red > 255:
+            rgb_list.append([red, green, blue, i])
+
+    print(rgb_list)
+
+    return warped
 
 while robot.step(TIME_STEP) != -1:
 
@@ -93,27 +155,8 @@ while robot.step(TIME_STEP) != -1:
     camera.saveImage("camera1.jpg", 100)
     # Fazendo a leitura da imagem com o opencv
     image = camera_funcoes.leitura_camera()
-    # Fazendo a transformação Warp na imagem
-    warped, invM = camera_funcoes.transformacao_warp(image)
-    # Tranfosrmação grayscale
-    grayscale = camera_funcoes.transformacao_grayscale(warped)
-    # Transformação Threshold
-    threshold = camera_funcoes.transformacao_threshold(grayscale)
-    # Detecção da linha
-    frame, left_curverad, right_curverad = camera_funcoes.search_around_poly(threshold)
-    frame = cv2.warpPerspective(frame, invM, (frame.shape[1], frame.shape[0]), flags = cv2.INTER_LINEAR)
-    frame = cv2.addWeighted(frame, 0.3, image, 0.7, 0)
 
-    # Add curvature and distance from the center
-    curvature = (left_curverad + right_curverad) / 2
-    #if curvature > 1500: curvature = 1500
-    car_pos = image.shape[1] / 2
-    # Centro da faixa 0.397m
-    center = (abs(car_pos - curvature) * (3.7 / 650)) / 10
-    curvatureAviso = 'Radius of Curvature: ' + str(round(curvature, 2)) + 'm'
-    centerAviso = str(round(center, 3)) + 'm away from center'
-    frame = cv2.putText(frame, curvatureAviso, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
-    frame = cv2.putText(frame, centerAviso, (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+    frame = detectando_linhas_metodo2()
 
     cv2.imshow("camera1", frame)
 
@@ -124,6 +167,7 @@ while robot.step(TIME_STEP) != -1:
     elif key == 316:
         angle = angle + 0.01
 
+    '''
     print("///////////////////////")
     print(f"Curvature: {curvature}")
     print(f"Center:    {center}")
@@ -133,11 +177,11 @@ while robot.step(TIME_STEP) != -1:
     data.append([curvature, center, angle])
 
     componentes_carro.set_steering_angle(angle, left_steer, right_steer)
-
+    '''
 
     #Esse código plota a camera com valores do eixo X e Y
     
-    img_copy = np.copy(image)
+    img_copy = np.copy(frame)
     img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
     plt.imshow(img_copy)
     #plt.show()

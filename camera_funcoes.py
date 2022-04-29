@@ -18,8 +18,8 @@ def transformacao_warp(image):
     w = image.shape[1]
     h = image.shape[0]
 
-    #src = np.float32([[60, h], [210, h], [160, 85], [100, 85]])
-    #src = np.float32([[25, h], [250, h], [160, 85], [100, 85]])
+    # src = np.float32([[60, h], [210, h], [160, 85], [100, 85]])
+    # src = np.float32([[25, h], [250, h], [160, 85], [100, 85]])
     src = np.float32([[30, h], [240, h], [175, 0], [90, 0]])
     # dst = np.float32([[0, 0], [0, h - 1], [w-1, h-1], [w-1, 0]])
     dst = np.float32([[0, h - 1], [w - 1, h - 1], [w - 1, 0], [0, 0]])

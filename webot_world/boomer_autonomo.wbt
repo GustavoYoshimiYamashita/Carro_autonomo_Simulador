@@ -63,7 +63,7 @@ StraightRoadSegment {
   ]
 }
 StraightRoadSegment {
-  translation -1 0.01 46.5
+  translation -1 0.005 46.5
   rotation 0 1 0 2.6180003061004253
   name "road(2)"
   width 5
@@ -112,13 +112,9 @@ DEF BOOMER_T3050 Tractor {
   hidden position2_0_1 1.808521551565397
   hidden position_0_2 1.6904253566115635
   hidden position_0_3 1.6902699116335818
-  hidden translation_1 0 0 0
   hidden rotation_1 1.356961175857269e-08 0.9999999999999997 1.7250790299289268e-08 1.8085493470736558
-  hidden translation_2 0 0 0
   hidden rotation_2 -1.583065504447803e-08 -0.9999999999999997 2.012463621270197e-08 1.8085215515653972
-  hidden translation_3 0 0 0
   hidden rotation_3 0 1 0 1.6904253566115632
-  hidden translation_4 0 0 0
   hidden rotation_4 0 -0.9999999999999999 0 1.6902699116335818
   translation 9.8778 0.503933 8.61912
   rotation 0.9990551466567716 0.043415557849967874 -0.0019756708208610815 0.07691504551287566
