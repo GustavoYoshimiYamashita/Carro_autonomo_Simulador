@@ -129,21 +129,30 @@ def detectando_linhas_metodo2():
 
     rgb_list = []
 
-    for i in range(51):
+    for i in range(150):
 
         cv2.circle(warped, (i, 120), radius=0, color=(0, 0, 255), thickness=-1)
 
-        color = image[i, 120]
+        color = image[120, i]
         blue = int(color[0])
         green = int(color[1])
         red = int(color[2])
 
-        if blue > 0 and green > 0 and red > 255:
+        if blue > 240 and green > 240 and red > 240:
             rgb_list.append([red, green, blue, i])
 
-    print(rgb_list)
+    distancia = 100
 
-    return warped
+    try:
+        meio = int(len(rgb_list)/2)
+        meio_pixel = rgb_list[meio][3]
+
+        distancia = (meio_pixel - 150) * -1
+        print(f"Valor da distancia {distancia}")
+    except:
+        pass
+
+    return warped, distancia
 
 while robot.step(TIME_STEP) != -1:
 
@@ -156,16 +165,13 @@ while robot.step(TIME_STEP) != -1:
     # Fazendo a leitura da imagem com o opencv
     image = camera_funcoes.leitura_camera()
 
-    frame = detectando_linhas_metodo2()
+    frame, distancia = detectando_linhas_metodo2()
 
     cv2.imshow("camera1", frame)
 
-    #print(robot.keyboard.getKey())
-    key = robot.keyboard.getKey()
-    if key == 314:
-        angle = angle - 0.01
-    elif key == 316:
-        angle = angle + 0.01
+    angle = _map(distancia, 105, 0, 0, 0.6)
+
+    componentes_carro.set_steering_angle(angle, left_steer, right_steer)
 
     '''
     print("///////////////////////")
