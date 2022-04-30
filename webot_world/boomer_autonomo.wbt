@@ -15,8 +15,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.006951042589252113 0.9798629099834686 0.19955039625531046 3.023686219372127
-  position 6.720887539582444 23.918496405566216 -22.397596211071555
+  orientation 0.057905789193649616 0.9907167632891636 0.1229927417195993 3.9353602475429685
+  position -22.824240385504798 18.92411534386994 16.805086161867397
   follow "vehicle"
   followSmoothness 0
 }
@@ -25,7 +25,7 @@ TexturedBackground {
 TexturedBackgroundLight {
 }
 DEF FLOOR Solid {
-  translation 0.08 0 -0.83
+  translation 0.08 0 0.7
   children [
     DEF PLANE_SHAPE Shape {
       appearance PBRAppearance {
@@ -47,6 +47,11 @@ DEF FLOOR Solid {
     }
   ]
   boundingObject USE PLANE_SHAPE
+}
+RoadIntersection {
+  translation -3 0.01 50
+  rotation 0 1 0 0.26180030610042526
+  roadsWidth 5
 }
 StraightRoadSegment {
   translation 11 0.01 24

@@ -14,7 +14,7 @@ import csv
 #%matplotlib qt5
 
 # Criando um arquivo csv para machine learning
-header = ['curvature', 'center', 'angle']
+header = ['curvature', 'center']
 data = []
 
 
@@ -73,6 +73,7 @@ rad = 0
 
 angle = 0
 
+
 # Iniciando tela do Pygame
 surface = pygame.display.set_mode((horizontal, vertical))
 
@@ -128,31 +129,51 @@ def detectando_linhas_metodo2():
     '''
 
     rgb_list = []
+    rgb_list2 = []
 
-    for i in range(150):
+    for i in range(80):
 
-        cv2.circle(warped, (i, 120), radius=0, color=(0, 0, 255), thickness=-1)
+        # Desenha uma linha vermelha do lado esquerdo
+        cv2.circle(image, (i, 115), radius=1, color=(0, 0, 255), thickness=-1)
 
-        color = image[120, i]
-        blue = int(color[0])
-        green = int(color[1])
-        red = int(color[2])
+        # Desenha uma linha vermelha do lado direito
+        direita = w - i - 1
+        cv2.circle(image, (direita, 115), radius=1, color=(0, 0, 255), thickness=-1)
 
-        if blue > 240 and green > 240 and red > 240:
-            rgb_list.append([red, green, blue, i])
+        colorEsquerda = image[120, i]
+        blueE = int(colorEsquerda[0])
+        greenE = int(colorEsquerda[1])
+        redE = int(colorEsquerda[2])
 
-    distancia = 100
+        colorDireita = image[120, direita]
+        blueD = int(colorDireita[0])
+        greenD = int(colorDireita[1])
+        redD = int(colorDireita[2])
+
+        if blueE > 200 and greenE > 200 and redE > 200:
+            rgb_list.append([blueE, greenE, redE, i])
+            cv2.circle(image, (i, 115), radius=1, color=(0, 255, 0), thickness=-1)
+
+        if blueD > 100 and greenD > 100 and redD > 100:
+            rgb_list2.append([blueD, greenD, redD, direita])
+            cv2.circle(image, (direita, 115), radius=1, color=(0, 255, 0), thickness=-1)
+
+    distancia_ideal = 80
+
+    distancia = 0
+    valor = 0
 
     try:
         meio = int(len(rgb_list)/2)
         meio_pixel = rgb_list[meio][3]
 
-        distancia = (meio_pixel - 150) * -1
-        print(f"Valor da distancia {distancia}")
+        distancia = (meio_pixel - 120) * -1
+        valor = distancia - distancia_ideal
+        print(f"Valor da distancia {valor}")
     except:
         pass
 
-    return warped, distancia
+    return image, valor
 
 while robot.step(TIME_STEP) != -1:
 
@@ -169,21 +190,25 @@ while robot.step(TIME_STEP) != -1:
 
     cv2.imshow("camera1", frame)
 
-    angle = _map(distancia, 105, 0, 0, 0.6)
+    if distancia > 0:
+        angle = _map(distancia, 0, 14, 0, -0.6)
+    elif distancia < 0:
+        angle = _map(distancia, 0, -30, 0, 0.6)
+    else:
+        angle = 0
 
     componentes_carro.set_steering_angle(angle, left_steer, right_steer)
 
-    '''
-    print("///////////////////////")
-    print(f"Curvature: {curvature}")
-    print(f"Center:    {center}")
-    print(f"Angle:     {angle}")
-    print("///////////////////////", end="\n")
 
-    data.append([curvature, center, angle])
+    #print("///////////////////////")
+    #print(f"Curvature: {distancia}")
+    #print(f"Angle:     {angle}")
+    #print("///////////////////////", end="\n")
+
+    data.append([distancia, angle])
 
     componentes_carro.set_steering_angle(angle, left_steer, right_steer)
-    '''
+
 
     #Esse código plota a camera com valores do eixo X e Y
     
@@ -201,7 +226,7 @@ while robot.step(TIME_STEP) != -1:
             cv2.destroyAllWindows()
             for i in range(len(data)):
                 print(data[i])
-            with open('data.csv', 'w', encoding='UTF8', newline='') as f:
+            with open('../ConversaoCelsiusFhrenheitRedeNeural/data.csv', 'w', encoding='UTF8', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 writer.writerows(data)
