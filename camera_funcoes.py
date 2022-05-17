@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 
 
-def leitura_camera():
-    img = cv2.imread("../Carro_autonomo_Simulador/camera1.jpg", cv2.IMREAD_COLOR)
+def leitura_camera(camera):
+    img = cv2.imread(f"../Carro_autonomo_Simulador/{camera}.jpg", cv2.IMREAD_COLOR)
     width = int(img.shape[1] * 2)
     height = int(img.shape[0] * 2)
 

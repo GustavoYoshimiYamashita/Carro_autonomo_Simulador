@@ -10,6 +10,12 @@ import componentes_carro
 import lidar
 import csv
 
+#Criando um classificador
+classificador = cv2.CascadeClassifier("myhaar.xml")
+
+#Definindo a fonte da letra que será imprimida na tela
+fonte = cv2.FONT_HERSHEY_SIMPLEX
+
 # Mexendo no matplotlib
 #%matplotlib qt5
 
@@ -42,8 +48,10 @@ right_rear_wheel.setPosition(float('inf'))
 
 # Camera
 camera = robot.getDevice('camera')
+camera2 = robot.getDevice('camera2')
 
 camera.enable(TIME_STEP)
+camera2.enable(TIME_STEP)
 
 # Lights
 left_flasher = robot.getDevice('left_flasher')
@@ -177,18 +185,35 @@ def detectando_linhas_metodo2():
 
 while robot.step(TIME_STEP) != -1:
 
-    componentes_carro.set_speed(1, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
+    componentes_carro.set_speed(0, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
 
     # Pegando imagem da camera do simulador
     camera.getImage()
+    camera2.getImage()
     # Salvando um print da imagem
     camera.saveImage("camera1.jpg", 100)
+    camera2.saveImage("camera2.jpg", 100)
     # Fazendo a leitura da imagem com o opencv
-    image = camera_funcoes.leitura_camera()
+    image = camera_funcoes.leitura_camera("camera1")
+    image2 = camera_funcoes.leitura_camera("camera2")
+
+    # Convertendo a imagem para a escala de cinza
+    imagemCinza = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+
+    # Atribuindo as classificações a variável facesDetectadas
+    placas = classificador.detectMultiScale(imagemCinza,minNeighbors= 2,
+                                                     scaleFactor=1.5,
+                                                     minSize=(25, 25))
+
+    # Nas faces dectadas, desenhar um retângulo e escrever Humano
+    for (x, y, l, a) in placas:
+        cv2.rectangle(image2, (x, y), (x + l, y + a), (0, 0, 255), 2)
+        cv2.putText(image2, 'placa', (x, y + (a + 30)), fonte, 1, (0, 255, 255))
 
     frame, distancia = detectando_linhas_metodo2()
 
     cv2.imshow("camera1", frame)
+    cv2.imshow("Placa", image2)
 
     if distancia > 0:
         angle = _map(distancia, 0, 14, 0, -0.6)
