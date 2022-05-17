@@ -11,7 +11,7 @@ import lidar
 import csv
 
 #Criando um classificador
-classificador = cv2.CascadeClassifier("myhaar.xml")
+classificador = cv2.CascadeClassifier("myhaar2.xml")
 
 #Definindo a fonte da letra que será imprimida na tela
 fonte = cv2.FONT_HERSHEY_SIMPLEX
@@ -185,7 +185,7 @@ def detectando_linhas_metodo2():
 
 while robot.step(TIME_STEP) != -1:
 
-    componentes_carro.set_speed(0, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
+    componentes_carro.set_speed(1, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
 
     # Pegando imagem da camera do simulador
     camera.getImage()
@@ -201,14 +201,14 @@ while robot.step(TIME_STEP) != -1:
     imagemCinza = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
 
     # Atribuindo as classificações a variável facesDetectadas
-    placas = classificador.detectMultiScale(imagemCinza,minNeighbors= 2,
+    placas = classificador.detectMultiScale(imagemCinza,minNeighbors= 4,
                                                      scaleFactor=1.5,
-                                                     minSize=(25, 25))
+                                                     minSize=(70, 70))
 
     # Nas faces dectadas, desenhar um retângulo e escrever Humano
     for (x, y, l, a) in placas:
         cv2.rectangle(image2, (x, y), (x + l, y + a), (0, 0, 255), 2)
-        cv2.putText(image2, 'placa', (x, y + (a + 30)), fonte, 1, (0, 255, 255))
+        cv2.putText(image2, 'STOP', (x, y + (a + 30)), fonte, 1, (0, 255, 255))
 
     frame, distancia = detectando_linhas_metodo2()
 
