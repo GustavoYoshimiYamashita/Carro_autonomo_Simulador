@@ -9,9 +9,29 @@ import camera_funcoes
 import componentes_carro
 import lidar
 import csv
+import imutils
+import time
+import argparse
+from collections import deque
+from imutils.video import VideoStream
+
+# construct the argument parse and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-v", "--video",
+	help="path to the (optional) video file")
+ap.add_argument("-b", "--buffer", type=int, default=64,
+	help="max buffer size")
+args = vars(ap.parse_args())
+
+# define the lower and upper boundaries of the "green"
+# ball in the HSV color space, then initialize the
+# list of tracked points
+greenLower = (0, 37, 148)
+greenUpper = (100, 192, 255)
+pts = deque(maxlen=args["buffer"])
 
 #Criando um classificador
-classificador = cv2.CascadeClassifier("myhaar2.xml")
+classificador = cv2.CascadeClassifier("myhaar3.xml")
 
 #Definindo a fonte da letra que será imprimida na tela
 fonte = cv2.FONT_HERSHEY_SIMPLEX
@@ -177,15 +197,34 @@ def detectando_linhas_metodo2():
 
         distancia = (meio_pixel - 120) * -1
         valor = distancia - distancia_ideal
-        print(f"Valor da distancia {valor}")
+        #print(f"Valor da distancia {valor}")
     except:
         pass
 
     return image, valor
 
+def detectando_placa_haarcascade(image2):
+    # Convertendo a imagem para a escala de cinza
+    imagemCinza = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+
+    # Atribuindo as classificações a variável facesDetectadas
+    placas = classificador.detectMultiScale(imagemCinza, minNeighbors=11,
+                                            scaleFactor=1.5,
+                                            minSize=(70, 70))
+
+    # Nas faces dectadas, desenhar um retângulo e escrever Humano
+    for (x, y, l, a) in placas:
+        quadrado = x, y, l, a
+        cv2.rectangle(image2, (x, y), (x + l, y + a), (0, 0, 255), 2)
+        cv2.putText(image2, 'Placa', (x, y + (a + 30)), fonte, 1, (0, 255, 255))
+        return quadrado
+
+teste = True
+speed = 1
+
 while robot.step(TIME_STEP) != -1:
 
-    componentes_carro.set_speed(1, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
+    componentes_carro.set_speed(speed, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
 
     # Pegando imagem da camera do simulador
     camera.getImage()
@@ -193,27 +232,67 @@ while robot.step(TIME_STEP) != -1:
     # Salvando um print da imagem
     camera.saveImage("camera1.jpg", 100)
     camera2.saveImage("camera2.jpg", 100)
+    camera2.saveImage("camera3.jpg", 100)
     # Fazendo a leitura da imagem com o opencv
     image = camera_funcoes.leitura_camera("camera1")
     image2 = camera_funcoes.leitura_camera("camera2")
-
-    # Convertendo a imagem para a escala de cinza
-    imagemCinza = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
-
-    # Atribuindo as classificações a variável facesDetectadas
-    placas = classificador.detectMultiScale(imagemCinza,minNeighbors= 4,
-                                                     scaleFactor=1.5,
-                                                     minSize=(70, 70))
-
-    # Nas faces dectadas, desenhar um retângulo e escrever Humano
-    for (x, y, l, a) in placas:
-        cv2.rectangle(image2, (x, y), (x + l, y + a), (0, 0, 255), 2)
-        cv2.putText(image2, 'STOP', (x, y + (a + 30)), fonte, 1, (0, 255, 255))
+    image3 = camera_funcoes.leitura_camera("camera3")
 
     frame, distancia = detectando_linhas_metodo2()
 
     cv2.imshow("camera1", frame)
-    cv2.imshow("Placa", image2)
+
+    blurred = cv2.GaussianBlur(image2, (11, 11), 0)
+    #hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    # construct a mask for the color "green", then perform
+    # a series of dilations and erosions to remove any small
+    # blobs left in the mask
+    mask = cv2.inRange(blurred, greenLower, greenUpper)
+    mask = cv2.erode(mask, None, iterations=2)
+    mask = cv2.dilate(mask, None, iterations=10)
+    # find contours in the mask and initialize the current
+    # (x, y) center of the ball
+    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
+                            cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    center = None
+    # only proceed if at least one contour was found
+    if len(cnts) > 0:
+        # find the largest contour in the mask, then use
+        # it to compute the minimum enclosing circle and
+        # centroid
+        c = max(cnts, key=cv2.contourArea)
+        ((x, y), radius) = cv2.minEnclosingCircle(c)
+        M = cv2.moments(c)
+        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        # only proceed if the radius meets a minimum size
+        print(f"Raio: {radius}")
+        if radius > 66:
+            speed = 0
+        if radius > 10:
+            # draw the circle and centroid on the frame,
+            # then update the list of tracked points
+            cv2.circle(image2, (int(x), int(y)), int(radius),
+                       (0, 255, 255), 2)
+            cv2.circle(image2, center, 5, (0, 0, 255), -1)
+    # update the points queue
+    pts.appendleft(center)
+    # loop over the set of tracked points
+    for i in range(1, len(pts)):
+        # if either of the tracked points are None, ignore
+        # them
+        if pts[i - 1] is None or pts[i] is None:
+            continue
+        # otherwise, compute the thickness of the line and
+        # draw the connecting lines
+        thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
+        cv2.line(image2, pts[i - 1], pts[i], (0, 0, 255), thickness)
+
+    cv2.imshow("Frame", image2)
+
+    quadrado = detectando_placa_haarcascade(image3)
+
+    cv2.imshow("placa", image3)
 
     if distancia > 0:
         angle = _map(distancia, 0, 14, 0, -0.6)
