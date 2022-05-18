@@ -266,7 +266,7 @@ while robot.step(TIME_STEP) != -1:
         M = cv2.moments(c)
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
         # only proceed if the radius meets a minimum size
-        print(f"Raio: {radius}")
+        #print(f"Raio: {radius}")
         if radius > 66:
             speed = 0
         if radius > 10:
