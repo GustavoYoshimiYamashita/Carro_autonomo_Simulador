@@ -98,7 +98,6 @@ horizontal = 200
 centroY = int(vertical/2)
 centroX = int(horizontal/2)
 rad = 0
-
 angle = 0
 
 
@@ -222,28 +221,9 @@ def detectando_placa_haarcascade(image2):
 teste = True
 speed = 1
 
-while robot.step(TIME_STEP) != -1:
-
-    componentes_carro.set_speed(speed, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
-
-    # Pegando imagem da camera do simulador
-    camera.getImage()
-    camera2.getImage()
-    # Salvando um print da imagem
-    camera.saveImage("camera1.jpg", 100)
-    camera2.saveImage("camera2.jpg", 100)
-    camera2.saveImage("camera3.jpg", 100)
-    # Fazendo a leitura da imagem com o opencv
-    image = camera_funcoes.leitura_camera("camera1")
-    image2 = camera_funcoes.leitura_camera("camera2")
-    image3 = camera_funcoes.leitura_camera("camera3")
-
-    frame, distancia = detectando_linhas_metodo2()
-
-    cv2.imshow("camera1", frame)
-
+def detectandoCirculo(image2):
     blurred = cv2.GaussianBlur(image2, (11, 11), 0)
-    #hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    # hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
     # construct a mask for the color "green", then perform
     # a series of dilations and erosions to remove any small
     # blobs left in the mask
@@ -266,7 +246,7 @@ while robot.step(TIME_STEP) != -1:
         M = cv2.moments(c)
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
         # only proceed if the radius meets a minimum size
-        #print(f"Raio: {radius}")
+        # print(f"Raio: {radius}")
         if radius > 66:
             speed = 0
         if radius > 10:
@@ -288,10 +268,29 @@ while robot.step(TIME_STEP) != -1:
         thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
         cv2.line(image2, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
+while robot.step(TIME_STEP) != -1:
+
+    componentes_carro.set_speed(speed, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
+
+    # Pegando imagem da camera do simulador
+    camera.getImage()
+    camera2.getImage()
+    # Salvando um print da imagem
+    camera.saveImage("camera1.jpg", 100)
+    camera2.saveImage("camera2.jpg", 100)
+    camera2.saveImage("camera3.jpg", 100)
+    # Fazendo a leitura da imagem com o opencv
+    image = camera_funcoes.leitura_camera("camera1")
+    image2 = camera_funcoes.leitura_camera("camera2")
+    image3 = camera_funcoes.leitura_camera("camera3")
+
+    frame, distancia = detectando_linhas_metodo2()
+    cv2.imshow("camera1", frame)
+
+    detectandoCirculo(image2)
     cv2.imshow("Frame", image2)
 
     quadrado = detectando_placa_haarcascade(image3)
-
     cv2.imshow("placa", image3)
 
     if distancia > 0:
@@ -313,16 +312,12 @@ while robot.step(TIME_STEP) != -1:
 
     componentes_carro.set_steering_angle(angle, left_steer, right_steer)
 
-
     #Esse código plota a camera com valores do eixo X e Y
     
     img_copy = np.copy(frame)
     img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
     plt.imshow(img_copy)
     #plt.show()
-
-
-
 
     for event in pygame.event.get():
         if event.type == 256:
@@ -335,6 +330,4 @@ while robot.step(TIME_STEP) != -1:
                 writer.writerow(header)
                 writer.writerows(data)
             exit()
-
-
 
