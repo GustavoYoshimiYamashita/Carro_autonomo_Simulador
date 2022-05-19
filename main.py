@@ -1,3 +1,10 @@
+
+"""
+
+    CÓDIGO DA SIMULAÇÃO DO CARRO AUTÔNOMO
+
+"""
+
 import camera_funcoes
 from controller import *
 import numpy as np
@@ -15,6 +22,13 @@ import argparse
 from collections import deque
 from imutils.video import VideoStream
 
+"""
+    
+    INICIANDO O SISTEMA PARA A DETCÇÃO DE CÍRCULOS VERMELHOS NA CÂMERA
+    posteriormente utilizado para detectar o raio da placa "STOP"
+
+"""
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video",
@@ -30,6 +44,13 @@ greenLower = (0, 37, 148)
 greenUpper = (100, 192, 255)
 pts = deque(maxlen=args["buffer"])
 
+
+"""
+
+    INICIANDO O SISTEMA PARA O ALGORITMO HAARCASCADE NA DETECÇÃO DE PLACAS
+
+"""
+
 #Criando um classificador
 classificador = cv2.CascadeClassifier("myhaar3.xml")
 
@@ -39,10 +60,21 @@ fonte = cv2.FONT_HERSHEY_SIMPLEX
 # Mexendo no matplotlib
 #%matplotlib qt5
 
+"""
+    
+    INICIANDO SISTEMA PARA O MACHINE LEARNING
+
+"""
+
 # Criando um arquivo csv para machine learning
 header = ['curvature', 'center']
 data = []
 
+"""
+
+    INICIANDO A COMUNICAÇÃO DO WEBOTS COM O PYTHON
+
+"""
 
 # Definindo o tempo de atualização da tela
 TIME_STEP = 10
@@ -89,6 +121,12 @@ Lidar.enable(lidar, TIME_STEP)
 Lidar.enablePointCloud(lidar)
 
 
+"""
+
+    INICIANDO O SISTEMA PARA O PYGAME
+
+"""
+
 ''' Variáveis para o Pygame'''
 
 # Inicializando cor
@@ -113,10 +151,19 @@ surface = pygame.display.set_mode((horizontal, vertical))
 
 ''''''''''''''''''''''''''''''
 
+
+"""
+
+    FUNÇÕES E ALGORITMOS
+
+"""
+
 #  Função Map do arduino, regra de três
 def _map(x, in_min, in_max, out_min, out_max):
     return float((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
 
+
+# Esse método desenha a área da rua
 def detectando_linhas_metodo1():
     # Fazendo a transformação Warp na imagem
     warped, invM = camera_funcoes.transformacao_warp(image)
@@ -142,6 +189,7 @@ def detectando_linhas_metodo1():
 
     return curvature, center, frame
 
+# Esse método verifica um array do pixels para encontrar a linha da rua
 def detectando_linhas_metodo2():
     # Fazendo a transformação Warp na imagem
     warped, invM = camera_funcoes.transformacao_warp(image)
@@ -209,6 +257,8 @@ def detectando_linhas_metodo2():
 
     return image, valor
 
+
+# Esse algoritmo utiliza a técnica haarcascade para detectar a placa STOP
 def detectando_placa_haarcascade(image2):
     # Convertendo a imagem para a escala de cinza
     imagemCinza = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
@@ -232,6 +282,7 @@ def detectando_placa_haarcascade(image2):
 teste = True
 speed = 10
 
+# Esse algoritmo detecta círculos vermelhos na imagem
 def detectandoCirculo(image2):
     global radius, y, x
     blurred = cv2.GaussianBlur(image2, (11, 11), 0)
@@ -277,6 +328,14 @@ def detectandoCirculo(image2):
         #cv2.line(image2, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
     return x, y, radius, center
+
+"""
+    
+    /////////////////////////////////////////////////////////////
+    >>>>>>>>>>>>>>>>>>LOOP PRINCIPAL DO PROGRAMA<<<<<<<<<<<<<<<<<
+    /////////////////////////////////////////////////////////////
+    
+"""
 
 while robot.step(TIME_STEP) != -1:
 
