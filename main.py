@@ -7,7 +7,7 @@ import cv2
 import matplotlib.pyplot as plt
 import camera_funcoes
 import componentes_carro
-import lidar
+import lidar_funcoes
 import csv
 import imutils
 import time
@@ -83,6 +83,11 @@ road_head_lights = robot.getDevice('road_head_lights')
 # Keyboard
 robot.keyboard.enable(TIME_STEP)
 
+# Iniciando o sensor Lidar
+lidar = robot.getDevice("lidar")
+Lidar.enable(lidar, TIME_STEP)
+Lidar.enablePointCloud(lidar)
+
 
 ''' Variáveis para o Pygame'''
 
@@ -93,8 +98,8 @@ blue = (0, 0, 255)
 black = (0, 0, 0)
 gray = (200, 200, 200)
 white = (255, 255, 255)
-vertical = 200
-horizontal = 200
+vertical = 300
+horizontal = 300
 centroY = int(vertical/2)
 centroX = int(horizontal/2)
 rad = 0
@@ -209,9 +214,9 @@ def detectando_placa_haarcascade(image2):
     imagemCinza = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
 
     # Atribuindo as classificações a variável facesDetectadas
-    placas = classificador.detectMultiScale(imagemCinza, minNeighbors=11,
+    placas = classificador.detectMultiScale(imagemCinza, minNeighbors=9,
                                             scaleFactor=1.5,
-                                            minSize=(70, 70))
+                                            minSize=(50, 50))
 
     # Nas faces dectadas, desenhar um retângulo e escrever Humano
     for (x, y, l, a) in placas:
@@ -225,7 +230,7 @@ def detectando_placa_haarcascade(image2):
         return quadrado
 
 teste = True
-speed = 1
+speed = 10
 
 def detectandoCirculo(image2):
     global radius, y, x
@@ -269,47 +274,121 @@ def detectandoCirculo(image2):
         # otherwise, compute the thickness of the line and
         # draw the connecting lines
         thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-        cv2.line(image2, pts[i - 1], pts[i], (0, 0, 255), thickness)
+        #cv2.line(image2, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
     return x, y, radius, center
 
 while robot.step(TIME_STEP) != -1:
 
+    # Definindo a velocidade do trator
     componentes_carro.set_speed(speed, left_front_wheel, right_front_wheel, left_rear_wheel, right_rear_wheel)
+
+    """
+        
+        COLETANDO OS DADOS DO LIDAR E DESENHANDO NO PYGAME
+        
+    """
+
+    # Atualizando a tela do Pygame para preto
+    surface.fill(black)
+    # Coletando onúmero de pontos do Lidar
+    number_points = Lidar.getNumberOfPoints(lidar)
+    # Recebendo as coordenadas dos pontos do Lidar
+    list_valorX, list_valorY, list_graus = lidar_funcoes.coletando_dados_lidar(lidar, number_points)
+
+    # Desenhando os pontos do Lidar no Pygame
+    for x in range(len(list_valorX)):
+        #print(f"0,x: {dados_lidar[0][x]}, 1,x: {dados_lidar[1][x]}")
+        pygame.draw.circle(surface, white, (list_valorX[x], list_valorY[x]), 5)
+
+    # Atualizando a tela do Pygame
+    pygame.display.update()
+    pygame.display.flip()
+
+
+    """
+    
+        VISÃO COMPUTACIONAL DO TRATOR
+    
+    """
 
     # Pegando imagem da camera do simulador
     camera.getImage()
     camera2.getImage()
+
     # Salvando um print da imagem
+    # Esse método salva em tempo real uma foto do que o trator está vendo
+    # apartir daí ele faz as leituras dessas imagens para aplicar a visão computacional
     camera.saveImage("camera1.jpg", 100)
     camera2.saveImage("camera2.jpg", 100)
     camera2.saveImage("camera3.jpg", 100)
+
     # Fazendo a leitura da imagem com o opencv
     image = camera_funcoes.leitura_camera("camera1")
     image2 = camera_funcoes.leitura_camera("camera2")
     image3 = camera_funcoes.leitura_camera("camera3")
 
+    '''
+    
+        DETECTANDO AS LINHAS BRANCAS NA RUA
+    
+    '''
+
+    # Utilizando o método de leitura de pixels da cor branca
     frame, distancia = detectando_linhas_metodo2()
-    cv2.imshow("camera1", frame)
 
-    x, y, radius, center = detectandoCirculo(image2)
-    #print(f"X, Y: ({x}, {y}) Raio: {radius}")
-    r = int(radius * 0.3)
-    x = int(x)
-    y = int(y)
-    coordenada1 = [x - r, y - r]
-    coordenada2 = [x + r, y + r]
-    #print(f"Coordenada1: {coordenada1}, coordenada2: {coordenada2}")
-    #cv2.rectangle(image2, (x, y), (x + l, y + a), (0, 0, 255), 2)
-    cv2.rectangle(image2, (x - r, y - r), (x + r, y + r), (0, 0, 255), 2)
+    # Aplicando a correção no ângulo do robô
+    if distancia > 0:
+        angle = _map(distancia, 0, 14, 0, -0.6)
+    elif distancia < 0:
+        angle = _map(distancia, 0, -30, 0, 0.6)
+    else:
+        angle = 0
+
+    # Enviando o ângulo para o trator
+    componentes_carro.set_steering_angle(angle, left_steer, right_steer)
+
+    # Mostrando a imagem com o método de detector de linha
+    cv2.imshow("detector de linha", frame)
 
 
-    quadrado = detectando_placa_haarcascade(image3)
+    '''
+    
+        MÉTODO DE DETECTAR A COR VERMELHA NA IMAGEM
+    
+    '''
+
     try:
+        x, y, radius, center = detectandoCirculo(image2)
+
+        #print(f"X, Y: ({x}, {y}) Raio: {radius}")
+        r = int(radius * 0.3)
+        x = int(x)
+        y = int(y)
+        coordenada1 = [x - r, y - r]
+        coordenada2 = [x + r, y + r]
+        #print(f"Coordenada1: {coordenada1}, coordenada2: {coordenada2}")
+        #cv2.rectangle(image2, (x, y), (x + l, y + a), (0, 0, 255), 2)
+        #cv2.rectangle(image2, (x - r, y - r), (x + r, y + r), (0, 0, 255), 2)
+
+    except:
+        pass
+
+
+    """
+    
+        VISÃO COMPUTACIONAL DETECTANDO PLACAS STOP NA IMAGEM
+    
+    """
+
+    try:
+        quadrado = detectando_placa_haarcascade(image3)
         xq, yq, l, a = quadrado
         #print(f"Coordenada1C: {x - r, y - r}, coordenada2: {x + r, y + r}")
         #print(f"Coordenada1Q: [{xq}, {yq}], coordenada2: [{xq+l}, {yq+a}]")
 
+
+        # Desenha um círculo apenas na placa STOP e descobre o raio
         if x-r > xq and y-r > yq and x+r < xq+l and y+r < yq+a:
             if radius > 10:
                 print(radius)
@@ -318,21 +397,15 @@ while robot.step(TIME_STEP) != -1:
                 cv2.circle(image2, (int(x), int(y)), int(radius),
                            (0, 255, 255), 2)
                 cv2.circle(image2, center, 5, (0, 0, 255), -1)
-            if radius > 60:
+                cv2.putText(image2, 'STOP', (xq, yq + (a + 30)), fonte, 1, (0, 255, 255))
+            if radius > 35:
+                print("PARAR")
                 speed = 0
     except:
         pass
     cv2.imshow("Frame", image2)
-    cv2.imshow("placa", image3)
+    #cv2.imshow("placa", image3)
 
-    if distancia > 0:
-        angle = _map(distancia, 0, 14, 0, -0.6)
-    elif distancia < 0:
-        angle = _map(distancia, 0, -30, 0, 0.6)
-    else:
-        angle = 0
-
-    componentes_carro.set_steering_angle(angle, left_steer, right_steer)
 
 
     #print("///////////////////////")
@@ -362,4 +435,5 @@ while robot.step(TIME_STEP) != -1:
                 writer.writerow(header)
                 writer.writerows(data)
             exit()
+
 

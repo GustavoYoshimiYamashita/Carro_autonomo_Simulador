@@ -15,8 +15,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.027978970794150074 0.9759419175830066 0.21622800627509883 2.866365436588651
-  position 4.755510422058623 10.540894676901592 28.05834260013211
+  orientation -0.060193139229490385 0.9465100578002416 0.31701024663673383 2.7695843620151983
+  position 18.57705833849512 14.942003197634076 6.494451397596965
   follow "vehicle"
   followSmoothness 0
 }
@@ -48,6 +48,14 @@ DEF FLOOR Solid {
   ]
   boundingObject USE PLANE_SHAPE
 }
+YieldSign {
+  translation 1.56654 0 51.1466
+  rotation 0 -1 0 0.523596
+}
+ExitSign {
+  translation 3.61008 0 52.2071
+  rotation 0 1 0 -0.523595307179586
+}
 Pedestrian {
   translation 5.25111 1.27 21.4693
   rotation 0 1 0 2.8798
@@ -67,6 +75,10 @@ RoadIntersection {
   translation -3 0.01 50
   rotation 0 1 0 0.26180030610042526
   roadsWidth 5
+}
+CautionSign {
+  translation 2.4921 0 51.815
+  rotation 0 1 0 -0.523595307179586
 }
 StraightRoadSegment {
   translation 11 0.01 24
@@ -109,7 +121,7 @@ CurvedRoadSegment {
   totalAngle 0.5
 }
 SolidBox {
-  translation 3.73 0 10.24
+  translation 13.28 0 22.24
   rotation 0 1 0 4.692820414042842e-06
   size 3 5 2
 }
@@ -126,16 +138,8 @@ SolidBox {
   size 3 5 2
 }
 DEF BOOMER_T3050 Tractor {
-  hidden translation_1 0 0 0
-  hidden rotation_1 0.1601408819835803 -0.9869318547450551 0.017900056061546078 6.057632453738752
-  hidden translation_2 0 0 0
-  hidden rotation_2 -0.1603688519215083 0.9868942299851559 0.01793349255954984 6.057524678436506
-  hidden translation_3 0 0 0
-  hidden rotation_3 0 1 0 3.396162715293516
-  hidden translation_4 0 0 0
-  hidden rotation_4 0 -1 0 3.409396491333825
-  translation 1.8997660430612886 0.5291861144527987 39.222779398727724
-  rotation 0.18298204255162837 -0.9817361888207566 0.05207329126653935 0.5498870522950193
+  translation 9.79727 0.537758 17.2631
+  rotation 0.8471861347648743 -0.15966902539911274 0.5067360806082882 0.104692
   controller "<extern>"
   sensorSlot [
     Compass {
