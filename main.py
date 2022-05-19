@@ -100,6 +100,8 @@ centroX = int(horizontal/2)
 rad = 0
 angle = 0
 
+raio = 0
+
 
 # Iniciando tela do Pygame
 surface = pygame.display.set_mode((horizontal, vertical))
@@ -214,6 +216,10 @@ def detectando_placa_haarcascade(image2):
     # Nas faces dectadas, desenhar um retângulo e escrever Humano
     for (x, y, l, a) in placas:
         quadrado = x, y, l, a
+        #x = int(x * 0.95)
+        #y = int(y * 0.95)
+        #l = int(l * 1.3)
+        #a = int(a * 1.3)
         cv2.rectangle(image2, (x, y), (x + l, y + a), (0, 0, 255), 2)
         cv2.putText(image2, 'Placa', (x, y + (a + 30)), fonte, 1, (0, 255, 255))
         return quadrado
@@ -222,6 +228,7 @@ teste = True
 speed = 1
 
 def detectandoCirculo(image2):
+    global radius, y, x
     blurred = cv2.GaussianBlur(image2, (11, 11), 0)
     # hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
     # construct a mask for the color "green", then perform
@@ -245,16 +252,12 @@ def detectandoCirculo(image2):
         ((x, y), radius) = cv2.minEnclosingCircle(c)
         M = cv2.moments(c)
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        raio = radius
         # only proceed if the radius meets a minimum size
         # print(f"Raio: {radius}")
-        if radius > 66:
+        if radius > 40:
             speed = 0
-        if radius > 10:
-            # draw the circle and centroid on the frame,
-            # then update the list of tracked points
-            cv2.circle(image2, (int(x), int(y)), int(radius),
-                       (0, 255, 255), 2)
-            cv2.circle(image2, center, 5, (0, 0, 255), -1)
+
     # update the points queue
     pts.appendleft(center)
     # loop over the set of tracked points
@@ -267,6 +270,8 @@ def detectandoCirculo(image2):
         # draw the connecting lines
         thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
         cv2.line(image2, pts[i - 1], pts[i], (0, 0, 255), thickness)
+
+    return x, y, radius, center
 
 while robot.step(TIME_STEP) != -1:
 
@@ -287,10 +292,37 @@ while robot.step(TIME_STEP) != -1:
     frame, distancia = detectando_linhas_metodo2()
     cv2.imshow("camera1", frame)
 
-    detectandoCirculo(image2)
-    cv2.imshow("Frame", image2)
+    x, y, radius, center = detectandoCirculo(image2)
+    #print(f"X, Y: ({x}, {y}) Raio: {radius}")
+    r = int(radius * 0.3)
+    x = int(x)
+    y = int(y)
+    coordenada1 = [x - r, y - r]
+    coordenada2 = [x + r, y + r]
+    #print(f"Coordenada1: {coordenada1}, coordenada2: {coordenada2}")
+    #cv2.rectangle(image2, (x, y), (x + l, y + a), (0, 0, 255), 2)
+    cv2.rectangle(image2, (x - r, y - r), (x + r, y + r), (0, 0, 255), 2)
+
 
     quadrado = detectando_placa_haarcascade(image3)
+    try:
+        xq, yq, l, a = quadrado
+        #print(f"Coordenada1C: {x - r, y - r}, coordenada2: {x + r, y + r}")
+        #print(f"Coordenada1Q: [{xq}, {yq}], coordenada2: [{xq+l}, {yq+a}]")
+
+        if x-r > xq and y-r > yq and x+r < xq+l and y+r < yq+a:
+            if radius > 10:
+                print(radius)
+                # draw the circle and centroid on the frame,
+                # then update the list of tracked points
+                cv2.circle(image2, (int(x), int(y)), int(radius),
+                           (0, 255, 255), 2)
+                cv2.circle(image2, center, 5, (0, 0, 255), -1)
+            if radius > 60:
+                speed = 0
+    except:
+        pass
+    cv2.imshow("Frame", image2)
     cv2.imshow("placa", image3)
 
     if distancia > 0:
