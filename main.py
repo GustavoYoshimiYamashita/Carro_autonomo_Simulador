@@ -84,6 +84,8 @@ robot = Robot()
 
 # Velocidade máxima do robô
 MAX_SPEED =  15.0 #12.3
+# Definindo a velocidade do trator
+speed = 5
 
 # Devices
 left_front_wheel = robot.getDevice('left_front_wheel')
@@ -280,7 +282,8 @@ def detectando_placa_haarcascade(image2):
         return quadrado
 
 teste = True
-speed = 10
+
+
 
 # Esse algoritmo detecta círculos vermelhos na imagem
 def detectandoCirculo(image2):
@@ -457,7 +460,7 @@ while robot.step(TIME_STEP) != -1:
                            (0, 255, 255), 2)
                 cv2.circle(image2, center, 5, (0, 0, 255), -1)
                 cv2.putText(image2, 'STOP', (xq, yq + (a + 30)), fonte, 1, (0, 255, 255))
-            if radius > 35:
+            if radius > 50:
                 print("PARAR")
                 speed = 0
     except:

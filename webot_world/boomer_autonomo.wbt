@@ -15,8 +15,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.060193139229490385 0.9465100578002416 0.31701024663673383 2.7695843620151983
-  position 18.57705833849512 14.942003197634076 6.494451397596965
+  orientation -0.08846715703448607 0.9748243375185544 0.2046730883818075 2.3185903795494696
+  position 20.51660635921997 14.810564611604422 26.744787348143454
   follow "vehicle"
   followSmoothness 0
 }
@@ -48,6 +48,10 @@ DEF FLOOR Solid {
   ]
   boundingObject USE PLANE_SHAPE
 }
+Atlas {
+  translation 0.123372 0.999957 41.744
+  rotation -0.9351132545462786 -0.25056306820553154 -0.25056206820525934 1.63784
+}
 YieldSign {
   translation 1.56654 0 51.1466
   rotation 0 -1 0 0.523596
@@ -57,8 +61,17 @@ ExitSign {
   rotation 0 1 0 -0.523595307179586
 }
 Pedestrian {
-  translation 5.25111 1.27 21.4693
+  translation 5.85565 1.27 26.6318
   rotation 0 1 0 2.8798
+  enableBoundingObject TRUE
+  bodySlot [
+    Solid {
+      name "solid(1)"
+      physics Physics {
+        mass 1
+      }
+    }
+  ]
 }
 StopSign {
   translation -3.92966 0 46.3896
@@ -146,7 +159,7 @@ DEF BOOMER_T3050 Tractor {
       rotation 0 1 0 3.14159
     }
     Lidar {
-      translation 0 1.17 0.97
+      translation -9.25024e-09 1.10035 0.976987
       rotation -2.396450619563278e-10 0.9987502582106131 -0.049979212921311515 3.14159
       horizontalResolution 128
       fieldOfView 6.28
