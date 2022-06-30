@@ -19,6 +19,7 @@ def coletando_dados_lidar(lidar, number_points):
     list_oeste = []
     list_graus = []
     graus = 0.0
+    imagem = []
 
     list_dados = []
 
@@ -45,5 +46,5 @@ def coletando_dados_lidar(lidar, number_points):
         list_valorY.append(retaY)
 
 
-    return list_valorX, list_valorY, list_graus
+    return list_valorX, list_valorY, list_graus, imagem
 
